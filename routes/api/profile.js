@@ -8,9 +8,9 @@ const User = require('../../models/User');
 const Post = require('../../models/Post');
 
 //@route   Get api/profile/me
-//@desc    Test route
-//@access  Public
-router.get('/me',auth, async(req, res) => {
+//@desc    Get current users profile
+//@access  Private
+router.get('/me',auth, async (req, res) => {
     try {
         const profile = await Profile.findOne({
           user: req.user.id
@@ -81,13 +81,13 @@ router.post(
       if (instagram) profileFields.social.instagram = instagram;
       if (linkedin) profileFields.social.linkedin = linkedin;
 
-    // normalize social fields to ensure valid url
-    for (const [key, value] of Object.entries(socialFields)) {
-      if (value && value.length > 0)
-        socialFields[key] = normalize(value, { forceHttps: true });
-    }
-    // add to profileFields
-    profileFields.social = socialFields;
+    // // normalize social fields to ensure valid url
+    // for (const [key, value] of Object.entries(socialFields)) {
+    //   if (value && value.length > 0)
+    //     socialFields[key] = normalize(value, { forceHttps: true });
+    // }
+    // // add to profileFields
+    // profileFields.social = socialFields;
 
     try {
       let profile = await Profile.findOne({ user: req.user.id });
@@ -95,14 +95,14 @@ router.post(
         //Update
         profile = await Profile.findOneandUpdate({ user: req.user.id },
           { $set: profileFields },
-          { new: true, upsert: true, setDefaultsOnInsert: true }
-        );
+          { new: true}
+        ); 
         return res.json(profile);
       }
       // Create
       profile = new Profile(profileFields);
 
-      await Profile.save();
+      await profile.save();
       res.json(profile);
     } catch (err) {
       console.error(err.message);
